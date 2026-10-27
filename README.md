@@ -1,58 +1,61 @@
-[<img width="295" src="https://inspect.aisi.org.uk/images/aisi-logo.svg" />](https://aisi.gov.uk/)
+# Agent 任务执行与自动化评测平台
 
-Welcome to Inspect, a framework for large language model evaluations created by the [UK AI Security Institute](https://aisi.gov.uk/).
+`agent-task-eval` 是基于 Inspect AI 整理的 Agent 任务评测项目，用于组织文件处理、代码执行和工具调用任务，集中查看任务评分与执行轨迹。
 
-Inspect provides many built-in components, including facilities for prompt engineering, tool usage, multi-turn dialog, and model graded evaluations. Extensions to Inspect (e.g. to support new elicitation and scoring techniques) can be provided by other Python packages.
+## 适用问题
 
-To get started with Inspect, please see the documentation at <https://inspect.aisi.org.uk/>.
+- 人工逐条测试难以重复：将任务输入、参考结果和评分规则放入同一评测任务，便于批量执行和比较。
+- 最终回答无法说明执行过程：通过样本日志查看模型消息、工具参数、工具返回和异常，辅助定位失败步骤。
+- 模型或提示词更新后缺少回归入口：复用同一批任务，对比任务得分、耗时和 Token 用量。
 
-Inspect also includes a collection of over 200 pre-built evaluations ready to run on any model (learn more at <https://inspect.aisi.org.uk/evals/>).
+## 评测流程
 
-> Coding agents: a structured index of the docs is published at <https://inspect.aisi.org.uk/llms.txt>. The user guide is concatenated as Markdown at <https://inspect.aisi.org.uk/llms-guide.txt>, and <https://inspect.aisi.org.uk/llms-full.txt> additionally bundles the API and CLI reference. Individual pages are available as Markdown by appending `.md` to the `.html` path (e.g. `/extensions/index.html.md`).
+任务与样本配置 → 模型执行与工具调用 → 结果评分 → 样本日志 → 失败分析
 
-***
+评测过程使用 Inspect AI 的 Task、Dataset、Solver 和 Scorer 抽象。多轮工具交互、沙箱、评分器及日志查看器均由底层框架提供，可据此配置具体应用的评测任务。
 
-To work on development of Inspect, install [uv](https://docs.astral.sh/uv/) (0.11.8 or later), clone the repository, and sync the development environment from the checked-in lockfile:
+## 可查看的示例
 
-```bash
-git clone https://github.com/UKGovernmentBEIS/inspect_ai.git
-cd inspect_ai
-uv sync
+| 入口 | 内容 |
+| --- | --- |
+| `examples/hello_world.py` | 最小任务定义与精确匹配评分，适合检查模型连接和运行环境 |
+| `examples/tool_use.py` | 工具调用任务示例 |
+| `examples/code_execution.py` | Docker 沙箱中的代码执行示例，需额外配置 Docker 和相应模型 |
+| `examples/bridge/` | 外部 Agent 框架的评测接入示例 |
+
+这些示例保留自上游，具体任务实现和依赖以对应文件为准。
+
+## 本地使用
+
+需要 Python 3.10 或以上版本。在 Windows PowerShell 中进入仓库目录后执行：
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e .
+.\.venv\Scripts\inspect.exe --help
 ```
 
-This installs Inspect in editable mode with its development dependencies at the versions recorded in `uv.lock`. Project dependencies are declared in `requirements*.txt` and exposed through `pyproject.toml`. When changing dependencies, update the appropriate requirements file and run `uv lock` rather than relying on `uv add`. uv only resolves releases that are at least seven days old, except for model provider SDKs and Inspect's own packages; see [CONTRIBUTING.md](CONTRIBUTING.md#working-on-your-issue) for how to adopt a newer release.
+按照所选模型提供商的要求，在本机配置访问凭据；不要将密钥提交到仓库。下面以 OpenAI 模型为命令格式示例，运行时可替换为自己可访问的模型：
 
-Optionally install pre-commit hooks via
-
-```bash
-make hooks
+```powershell
+.\.venv\Scripts\inspect.exe eval examples/hello_world.py --model openai/gpt-5
+.\.venv\Scripts\inspect.exe view
 ```
 
-Run linting, formatting, and tests via
+工具调用示例入口：
 
-```bash
-make check
-make test
+```powershell
+.\.venv\Scripts\inspect.exe eval examples/tool_use.py --model openai/gpt-5
 ```
 
-Prefix those commands with `uv run` (for example, `uv run make check`), or activate the environment in `.venv` first.
+完整模型配置、沙箱和评分器说明见 [Inspect AI 文档](https://inspect.aisi.org.uk/)。
 
-If you use VS Code, you should be sure to have installed the recommended extensions (Python, Ruff, and MyPy). Note that you'll be prompted to install these when you open the project in VS Code.
+## 来源与维护范围
 
-### Frontend development (TypeScript)
+本仓库由 ww68y 维护，基于 [UKGovernmentBEIS/inspect_ai](https://github.com/UKGovernmentBEIS/inspect_ai) 的 `71e00d28fc` 版本整理。原始评测框架由 UK AI Security Institute 开发。
 
-The web UI lives in a git submodule at `src/inspect_ai/_view/ts-mono/`. **These steps are only needed if you plan to work on the TypeScript/React frontend** — Python-only contributors can skip this entirely.
+本次整理包括独立的仓库展示名称、中文应用场景说明和示例运行入口；核心代码沿用上游实现。原项目说明保存在 [README.upstream.md](README.upstream.md)，原有提交历史与作者信息予以保留。
 
-Initialize the submodule and install dependencies — see the [one-time setup guide](https://github.com/meridianlabs-ai/ts-mono/blob/main/docs/submodule-guide.md#one-time-setup).
+## 许可证
 
-### Documentation
-
-To work on the Inspect documentation, sync the optional `doc` dependencies and build the docs:
-
-```
-uv sync --extra doc
-cd docs
-uv run quarto render # or 'uv run quarto preview'
-```
-
-If you intend to work on the docs iteratively, you'll want to install the Quarto extension in VS Code.
+沿用上游 [MIT License](LICENSE)，保留原有版权声明与许可文本。
