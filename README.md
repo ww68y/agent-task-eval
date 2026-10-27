@@ -1,6 +1,6 @@
 # Agent 任务执行与自动化评测平台
 
-`agent-task-eval` 是基于 Inspect AI 整理的 Agent 任务评测项目，用于组织文件处理、代码执行和工具调用任务，集中查看任务评分与执行轨迹。
+`agent-task-eval` 面向文件处理、代码执行和工具调用任务，提供统一的任务配置、结果评分与执行轨迹查看入口。
 
 ## 适用问题
 
@@ -23,39 +23,32 @@
 | `examples/code_execution.py` | Docker 沙箱中的代码执行示例，需额外配置 Docker 和相应模型 |
 | `examples/bridge/` | 外部 Agent 框架的评测接入示例 |
 
-这些示例保留自上游，具体任务实现和依赖以对应文件为准。
+具体任务实现和依赖以对应文件为准。
 
 ## 本地使用
 
-需要 Python 3.10 或以上版本。在 Windows PowerShell 中进入仓库目录后执行：
+需要 Python 3.10 或以上版本，并安装 uv。在 Windows PowerShell 中进入仓库目录后执行：
 
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -e .
-.\.venv\Scripts\inspect.exe --help
+uv sync
+uv run inspect --help
 ```
 
 按照所选模型提供商的要求，在本机配置访问凭据；不要将密钥提交到仓库。下面以 OpenAI 模型为命令格式示例，运行时可替换为自己可访问的模型：
 
 ```powershell
-.\.venv\Scripts\inspect.exe eval examples/hello_world.py --model openai/gpt-5
-.\.venv\Scripts\inspect.exe view
+uv run inspect eval examples/hello_world.py --model openai/gpt-5
+uv run inspect view
 ```
 
 工具调用示例入口：
 
 ```powershell
-.\.venv\Scripts\inspect.exe eval examples/tool_use.py --model openai/gpt-5
+uv run inspect eval examples/tool_use.py --model openai/gpt-5
 ```
 
 完整模型配置、沙箱和评分器说明见 [Inspect AI 文档](https://inspect.aisi.org.uk/)。
 
-## 来源与维护范围
-
-本仓库由 ww68y 维护，基于 [UKGovernmentBEIS/inspect_ai](https://github.com/UKGovernmentBEIS/inspect_ai) 的 `71e00d28fc` 版本整理。原始评测框架由 UK AI Security Institute 开发。
-
-本次整理包括独立的仓库展示名称、中文应用场景说明和示例运行入口；核心代码沿用上游实现。原项目说明保存在 [README.upstream.md](README.upstream.md)，原有提交历史与作者信息予以保留。
-
 ## 许可证
 
-沿用上游 [MIT License](LICENSE)，保留原有版权声明与许可文本。
+[MIT License](LICENSE)
